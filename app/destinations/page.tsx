@@ -59,9 +59,12 @@ export default function DestinationsPage() {
             >
               <div className="relative">
                 <img
-                  src={`https://source.unsplash.com/800x600/?${encodeURIComponent(destination.name + " travel")}`}
+                  src={`https://source.unsplash.com/featured/800x600/?${encodeURIComponent(destination.name + " travel")}`}
                   alt={destination.name}
                   className="w-full h-64 object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.svg"
+                  }}
                 />
                 <div className="absolute top-4 right-4">
                   <Badge className="bg-primary/90 text-primary-foreground">AI Recommended</Badge>
