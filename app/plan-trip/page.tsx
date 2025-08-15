@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { getNames as getCountryNames } from "country-list";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
@@ -17,14 +17,11 @@ export default function PlanTripPage() {
   const [currency, setCurrency] = useState("USD");
   const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [destinationRegion, setDestinationRegion] = useState("any");
+  const [destinationRegion, setDestinationRegion] = useState("");
   const [citizenship, setCitizenship] = useState("");
   const [travelStyle, setTravelStyle] = useState("");
-  const [countryNames, setCountryNames] = useState<string[]>([]);
-
-  useEffect(() => {
-    setCountryNames(getCountryNames());
-  }, []);
+  const [searchCitizenship, setSearchCitizenship] = useState("");
+  const [searchDestination, setSearchDestination] = useState("");
 
   const months = [
     "January", "February", "March", "April", "May", "June",
@@ -50,6 +47,24 @@ export default function PlanTripPage() {
     { value: "relaxing", label: "Relaxing", description: "Peaceful and rejuvenating experiences" },
   ];
 
+  const countries = getCountryNames();
+  const filteredCountries = countries.filter((country) =>
+    country.toLowerCase().includes(searchCitizenship.toLowerCase())
+  );
+
+  const regions = [
+    "Any Region - Let AI Decide",
+    "Europe",
+    "Asia",
+    "Americas",
+    "Africa",
+    "Oceania",
+    "Middle East",
+  ];
+  const filteredRegions = regions.filter((region) =>
+    region.toLowerCase().includes(searchDestination.toLowerCase())
+  );
+
   const handleMonthToggle = (month: string) => {
     setSelectedMonths((prev) =>
       prev.includes(month) ? prev.filter((m) => m !== month) : [...prev, month]
@@ -64,13 +79,12 @@ export default function PlanTripPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const data = {
       budget: budget[0],
       currency,
       months: selectedMonths,
       interests: selectedInterests,
-      region: destinationRegion,
+      region: destinationRegion.toLowerCase().replace(" ", "-"),
       citizenship,
       travelStyle,
     };
@@ -131,21 +145,11 @@ export default function PlanTripPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{currency} 500</span>
-                  <span className="font-medium text-primary">
-                    {currency} {budget[0].toLocaleString()}
-                  </span>
-                  <span>{currency} 10,000+</span>
-                </div>
               </div>
 
               {/* Months */}
               <div className="space-y-4">
                 <Label className="text-lg font-medium font-sans">Preferred Travel Months</Label>
-                <p className="text-sm text-muted-foreground font-serif">
-                  Select one or more months when you'd like to travel
-                </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {months.map((month) => (
                     <div key={month} className="flex items-center space-x-2">
@@ -154,38 +158,29 @@ export default function PlanTripPage() {
                         checked={selectedMonths.includes(month)}
                         onCheckedChange={() => handleMonthToggle(month)}
                       />
-                      <Label htmlFor={month} className="text-sm font-serif cursor-pointer">
-                        {month}
-                      </Label>
+                      <Label htmlFor={month} className="text-sm font-serif cursor-pointer">{month}</Label>
                     </div>
                   ))}
                 </div>
-                {selectedMonths.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {selectedMonths.map((month) => (
-                      <Badge key={month} variant="secondary" className="bg-primary/10 text-primary">
-                        {month}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
               </div>
 
-              {/* Region */}
+              {/* Region (Searchable) */}
               <div className="space-y-4">
                 <Label className="text-lg font-medium font-sans">Destination Region (Optional)</Label>
-                <Select onValueChange={setDestinationRegion} value={destinationRegion}>
+                <Input
+                  placeholder="Search region..."
+                  className="mb-2"
+                  value={searchDestination}
+                  onChange={(e) => setSearchDestination(e.target.value)}
+                />
+                <Select onValueChange={setDestinationRegion}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Any region - let AI decide" />
+                    <SelectValue placeholder="Select region" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="any">Any region - surprise me!</SelectItem>
-                    <SelectItem value="europe">Europe</SelectItem>
-                    <SelectItem value="asia">Asia</SelectItem>
-                    <SelectItem value="americas">Americas</SelectItem>
-                    <SelectItem value="africa">Africa</SelectItem>
-                    <SelectItem value="oceania">Oceania</SelectItem>
-                    <SelectItem value="middle-east">Middle East</SelectItem>
+                    {filteredRegions.map((region) => (
+                      <SelectItem key={region} value={region}>{region}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -195,10 +190,7 @@ export default function PlanTripPage() {
                 <Label className="text-lg font-medium font-sans">Travel Style</Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {travelStyles.map((style) => (
-                    <Card
-                      key={style.value}
-                      className="cursor-pointer hover:shadow-md transition-all border-border/50 hover:border-primary/50"
-                    >
+                    <Card key={style.value} className="cursor-pointer hover:shadow-md transition-all border-border/50 hover:border-primary/50">
                       <CardContent className="p-4">
                         <div className="flex items-center space-x-3">
                           <input
@@ -223,15 +215,9 @@ export default function PlanTripPage() {
               {/* Interests */}
               <div className="space-y-4">
                 <Label className="text-lg font-medium font-sans">Your Interests</Label>
-                <p className="text-sm text-muted-foreground font-serif">
-                  Select all that apply to personalize your recommendations
-                </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {interests.map((interest) => (
-                    <div
-                      key={interest.id}
-                      className="flex items-center space-x-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors"
-                    >
+                    <div key={interest.id} className="flex items-center space-x-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors">
                       <Checkbox
                         id={interest.id}
                         checked={selectedInterests.includes(interest.id)}
@@ -243,35 +229,24 @@ export default function PlanTripPage() {
                     </div>
                   ))}
                 </div>
-                {selectedInterests.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {selectedInterests.map((interestId) => {
-                      const interest = interests.find((i) => i.id === interestId);
-                      return (
-                        <Badge key={interestId} variant="secondary" className="bg-secondary/10 text-secondary">
-                          {interest?.label}
-                        </Badge>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
 
-              {/* Citizenship */}
+              {/* Citizenship (Searchable) */}
               <div className="space-y-4">
                 <Label className="text-lg font-medium font-sans">Citizenship</Label>
-                <p className="text-sm text-muted-foreground font-serif">
-                  This helps us provide visa requirements and travel advisories
-                </p>
+                <Input
+                  placeholder="Search your country..."
+                  className="mb-2"
+                  value={searchCitizenship}
+                  onChange={(e) => setSearchCitizenship(e.target.value)}
+                />
                 <Select onValueChange={setCitizenship} value={citizenship}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select your country" />
                   </SelectTrigger>
                   <SelectContent>
-                    {countryNames.map((country) => (
-                      <SelectItem key={country} value={country}>
-                        {country}
-                      </SelectItem>
+                    {filteredCountries.map((country) => (
+                      <SelectItem key={country} value={country}>{country}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
