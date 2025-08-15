@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { getNames as getCountryNames } from "country-list";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -18,6 +20,11 @@ export default function PlanTripPage() {
   const [destinationRegion, setDestinationRegion] = useState("any");
   const [citizenship, setCitizenship] = useState("");
   const [travelStyle, setTravelStyle] = useState("");
+  const [countryNames, setCountryNames] = useState<string[]>([]);
+
+  useEffect(() => {
+    setCountryNames(getCountryNames());
+  }, []);
 
   const months = [
     "January", "February", "March", "April", "May", "June",
@@ -261,15 +268,11 @@ export default function PlanTripPage() {
                     <SelectValue placeholder="Select your country" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="us">United States</SelectItem>
-                    <SelectItem value="ca">Canada</SelectItem>
-                    <SelectItem value="uk">United Kingdom</SelectItem>
-                    <SelectItem value="au">Australia</SelectItem>
-                    <SelectItem value="de">Germany</SelectItem>
-                    <SelectItem value="fr">France</SelectItem>
-                    <SelectItem value="jp">Japan</SelectItem>
-                    <SelectItem value="sg">Singapore</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    {countryNames.map((country) => (
+                      <SelectItem key={country} value={country}>
+                        {country}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
