@@ -1,10 +1,6 @@
 "use client"
 
-import Link from "next/link"
 import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 
 interface Destination {
   name: string
@@ -13,93 +9,52 @@ interface Destination {
   activities: string[]
   estimatedCost: number
   visaRequirement: string
+  imageUrl?: string
 }
 
 export default function DestinationsPage() {
   const [destinations, setDestinations] = useState<Destination[]>([])
+  const [currency, setCurrency] = useState("USD")
 
   useEffect(() => {
-    const saved = localStorage.getItem("travelResults")
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        setDestinations(parsed.result || parsed)
-      } catch (err) {
-        console.error("Failed to parse localStorage result:", err)
+    const stored = localStorage.getItem("travelResults")
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      if (parsed?.result) {
+        setDestinations(parsed.result)
+        if (parsed.currency) setCurrency(parsed.currency)
       }
     }
   }, [])
 
-  const getCostColor = (cost: number) => {
-    if (cost < 1000) return "bg-green-100 text-green-800"
-    if (cost < 2500) return "bg-yellow-100 text-yellow-800"
-    return "bg-red-100 text-red-800"
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-accent/10 py-12">
-      <div className="container px-4 max-w-6xl mx-auto">
-        <div className="text-center space-y-4 mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold font-sans bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-            Your Perfect Destinations
-          </h1>
-          <p className="text-lg text-muted-foreground font-serif max-w-3xl mx-auto">
-            Based on your preferences, here are our personalized recommendations
-          </p>
-          <div className="flex justify-center">
-            <Button variant="outline" asChild>
-              <Link href="/plan-trip">Refine Preferences</Link>
-            </Button>
+    <div className="min-h-screen py-12 px-4 max-w-5xl mx-auto">
+      <h1 className="text-4xl font-bold text-center mb-10">Your AI-Picked Destinations</h1>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {destinations.map((dest, i) => (
+          <div key={i} className="rounded-xl shadow-lg border overflow-hidden bg-white">
+            <img
+              src={`https://source.unsplash.com/400x300/?${encodeURIComponent(dest.name)}`}
+              alt={dest.name}
+              className="w-full h-48 object-cover"
+            />
+            <div className="p-4 space-y-2">
+              <h2 className="text-xl font-semibold">{dest.name}, {dest.country}</h2>
+              <p className="text-sm text-muted-foreground">{dest.fitReason}</p>
+              <div className="mt-2">
+                <h3 className="font-medium">Activities:</h3>
+                <ul className="list-disc list-inside text-sm">
+                  {dest.activities.map((a, idx) => <li key={idx}>{a}</li>)}
+                </ul>
+              </div>
+              <p className="text-sm font-semibold mt-2">
+                Estimated Cost: {currency} {dest.estimatedCost.toLocaleString()}
+              </p>
+              <p className="text-sm text-muted-foreground">Visa: {dest.visaRequirement}</p>
+            </div>
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          {destinations.map((dest, index) => (
-            <Card
-              key={index}
-              className="overflow-hidden shadow-xl border-border/50 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-sans">{dest.name}</CardTitle>
-                <CardDescription className="font-serif">{dest.country}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <p className="text-muted-foreground font-serif">{dest.fitReason}</p>
-
-                <div>
-                  <h4 className="font-medium font-sans">Top Activities</h4>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {dest.activities.map((a, i) => (
-                      <Badge key={i} variant="secondary" className="bg-accent/20 text-accent-foreground">
-                        {a}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex justify-between text-sm">
-                  <div>
-                    <span className="font-medium font-sans">Estimated Cost:</span>{" "}
-                    <Badge className={getCostColor(dest.estimatedCost)}>${dest.estimatedCost}</Badge>
-                  </div>
-                  <div>
-                    <span className="font-medium font-sans">Visa Info:</span>{" "}
-                    <span className="text-muted-foreground font-serif">{dest.visaRequirement}</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                  <Button asChild className="flex-1 bg-primary hover:bg-primary/90">
-                    <Link href={`/itinerary?destination=${index + 1}`}>Build Itinerary</Link>
-                  </Button>
-                  <Button asChild variant="outline" className="flex-1 bg-transparent">
-                    <Link href={`/best-time?destination=${index + 1}`}>View Best Times</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        ))}
       </div>
     </div>
   )

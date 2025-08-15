@@ -1,37 +1,28 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Slider } from "@/components/ui/slider"
-import { Badge } from "@/components/ui/badge"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
 
 export default function PlanTripPage() {
-  const [budget, setBudget] = useState([2000])
-  const [selectedMonths, setSelectedMonths] = useState<string[]>([])
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([])
-  const [destinationRegion, setDestinationRegion] = useState("any")
-  const [citizenship, setCitizenship] = useState("")
-  const [travelStyle, setTravelStyle] = useState("")
+  const [budget, setBudget] = useState([2000]);
+  const [currency, setCurrency] = useState("USD");
+  const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [destinationRegion, setDestinationRegion] = useState("any");
+  const [citizenship, setCitizenship] = useState("");
+  const [travelStyle, setTravelStyle] = useState("");
 
   const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ]
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
 
   const interests = [
     { id: "nature", label: "Nature & Wildlife" },
@@ -41,7 +32,7 @@ export default function PlanTripPage() {
     { id: "shopping", label: "Shopping & Cities" },
     { id: "adventure", label: "Adventure Sports" },
     { id: "history", label: "History & Architecture" },
-  ]
+  ];
 
   const travelStyles = [
     { value: "luxury", label: "Luxury", description: "Premium accommodations and experiences" },
@@ -50,44 +41,47 @@ export default function PlanTripPage() {
     { value: "family", label: "Family", description: "Kid-friendly activities and accommodations" },
     { value: "solo", label: "Solo", description: "Perfect for independent travelers" },
     { value: "relaxing", label: "Relaxing", description: "Peaceful and rejuvenating experiences" },
-  ]
+  ];
 
   const handleMonthToggle = (month: string) => {
-    setSelectedMonths((prev) => (prev.includes(month) ? prev.filter((m) => m !== month) : [...prev, month]))
-  }
+    setSelectedMonths((prev) =>
+      prev.includes(month) ? prev.filter((m) => m !== month) : [...prev, month]
+    );
+  };
 
   const handleInterestToggle = (interestId: string) => {
     setSelectedInterests((prev) =>
-      prev.includes(interestId) ? prev.filter((i) => i !== interestId) : [...prev, interestId],
-    )
-  }
+      prev.includes(interestId) ? prev.filter((i) => i !== interestId) : [...prev, interestId]
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     const data = {
       budget: budget[0],
+      currency,
       months: selectedMonths,
       interests: selectedInterests,
       region: destinationRegion,
       citizenship,
       travelStyle,
-    }
+    };
 
     try {
       const res = await fetch("/api/plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
-      })
+      });
 
-      const result = await res.json()
-      localStorage.setItem("travelResults", JSON.stringify(result))
-      window.location.href = "/destinations"
+      const result = await res.json();
+      localStorage.setItem("travelResults", JSON.stringify(result));
+      window.location.href = "/destinations";
     } catch (error) {
-      console.error("Failed to plan trip", error)
+      console.error("Failed to plan trip", error);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-accent/10 py-12">
@@ -111,18 +105,35 @@ export default function PlanTripPage() {
             </CardHeader>
 
             <CardContent className="space-y-8">
+              {/* Budget */}
               <div className="space-y-4">
                 <Label className="text-lg font-medium font-sans">Budget Range</Label>
-                <div className="space-y-4">
+                <div className="flex items-center gap-4">
                   <Slider value={budget} onValueChange={setBudget} max={10000} min={500} step={100} className="w-full" />
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>$500</span>
-                    <span className="font-medium text-primary">${budget[0].toLocaleString()}</span>
-                    <span>$10,000+</span>
-                  </div>
+                  <Select onValueChange={setCurrency} value={currency}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">USD</SelectItem>
+                      <SelectItem value="EUR">EUR</SelectItem>
+                      <SelectItem value="AUD">AUD</SelectItem>
+                      <SelectItem value="FJD">FJD</SelectItem>
+                      <SelectItem value="INR">INR</SelectItem>
+                      <SelectItem value="SGD">SGD</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>{currency} 500</span>
+                  <span className="font-medium text-primary">
+                    {currency} {budget[0].toLocaleString()}
+                  </span>
+                  <span>{currency} 10,000+</span>
                 </div>
               </div>
 
+              {/* Months */}
               <div className="space-y-4">
                 <Label className="text-lg font-medium font-sans">Preferred Travel Months</Label>
                 <p className="text-sm text-muted-foreground font-serif">
@@ -153,6 +164,7 @@ export default function PlanTripPage() {
                 )}
               </div>
 
+              {/* Region */}
               <div className="space-y-4">
                 <Label className="text-lg font-medium font-sans">Destination Region (Optional)</Label>
                 <Select onValueChange={setDestinationRegion} value={destinationRegion}>
@@ -171,6 +183,7 @@ export default function PlanTripPage() {
                 </Select>
               </div>
 
+              {/* Travel Style */}
               <div className="space-y-4">
                 <Label className="text-lg font-medium font-sans">Travel Style</Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -200,6 +213,7 @@ export default function PlanTripPage() {
                 </div>
               </div>
 
+              {/* Interests */}
               <div className="space-y-4">
                 <Label className="text-lg font-medium font-sans">Your Interests</Label>
                 <p className="text-sm text-muted-foreground font-serif">
@@ -225,17 +239,18 @@ export default function PlanTripPage() {
                 {selectedInterests.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-3">
                     {selectedInterests.map((interestId) => {
-                      const interest = interests.find((i) => i.id === interestId)
+                      const interest = interests.find((i) => i.id === interestId);
                       return (
                         <Badge key={interestId} variant="secondary" className="bg-secondary/10 text-secondary">
                           {interest?.label}
                         </Badge>
-                      )
+                      );
                     })}
                   </div>
                 )}
               </div>
 
+              {/* Citizenship */}
               <div className="space-y-4">
                 <Label className="text-lg font-medium font-sans">Citizenship</Label>
                 <p className="text-sm text-muted-foreground font-serif">
@@ -259,6 +274,7 @@ export default function PlanTripPage() {
                 </Select>
               </div>
 
+              {/* Submit */}
               <div className="pt-6 space-y-4">
                 <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-lg py-6">
                   Find My Best Destinations
@@ -272,5 +288,5 @@ export default function PlanTripPage() {
         </form>
       </div>
     </div>
-  )
+  );
 }
