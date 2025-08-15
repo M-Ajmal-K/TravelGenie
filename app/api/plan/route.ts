@@ -5,6 +5,17 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
+// Region-to-country mapping
+const regionMap: Record<string, string[]> = {
+  Africa: ["South Africa", "Kenya", "Morocco", "Egypt", "Tanzania", "Ghana", "Namibia"],
+  Asia: ["Thailand", "Japan", "Vietnam", "Indonesia", "India", "Malaysia", "Philippines", "Nepal"],
+  Europe: ["France", "Italy", "Germany", "Spain", "Greece", "Switzerland", "Netherlands", "Portugal"],
+  "North America": ["USA", "Canada", "Mexico"],
+  "South America": ["Brazil", "Argentina", "Peru", "Chile", "Colombia"],
+  Oceania: ["Australia", "New Zealand", "Fiji", "Papua New Guinea"],
+  "Middle East": ["UAE", "Turkey", "Jordan", "Saudi Arabia", "Qatar", "Oman"],
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json()
@@ -42,8 +53,11 @@ export async function POST(req: Request) {
       }
     }
 
+    // Region fallback
+    const countriesInRegion = regionMap[region] || []
+
     const prompt = `
-You are a travel planning expert. Based on the user's preferences below, suggest 3 amazing travel destinations.
+You are a smart travel planner. Based on the user's preferences, suggest 3 amazing travel destinations from the following countries only: ${countriesInRegion.join(", ")}.
 
 Respond ONLY in valid JSON array format:
 
@@ -60,11 +74,11 @@ Respond ONLY in valid JSON array format:
 
 User Preferences:
 - Budget: $${convertedBudget} USD
-- Preferred Travel Months: ${months.join(", ")}
-- Interests: ${interests.join(", ")}
-- Region: ${region}
-- Travel Style: ${travelStyle}
+- Preferred Travel Months: ${months.join(", ") || "Any"}
+- Interests: ${interests.join(", ") || "Any"}
+- Travel Style: ${travelStyle || "Any"}
 - Citizenship: ${citizenship}
+- Region: ${region}
 `
 
     const chatResponse = await openai.chat.completions.create({
