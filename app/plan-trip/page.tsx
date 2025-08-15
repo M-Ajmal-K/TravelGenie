@@ -29,7 +29,6 @@ export default function PlanTripPage() {
   const [citizenship, setCitizenship] = useState("");
   const [travelStyle, setTravelStyle] = useState("");
   const [openCitizenship, setOpenCitizenship] = useState(false);
-  const [openDestination, setOpenDestination] = useState(false);
 
   const months = [
     "January", "February", "March", "April", "May", "June",
@@ -171,36 +170,23 @@ export default function PlanTripPage() {
                 )}
               </div>
 
-              {/* Destination Country */}
+              {/* Destination Region */}
               <div className="space-y-4">
-                <Label className="text-lg font-medium font-sans">Destination Country</Label>
-                <Popover open={openDestination} onOpenChange={setOpenDestination}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" role="combobox" className="w-full justify-between">
-                      {destinationCountry || "Select destination country"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0 max-h-60 overflow-y-auto">
-                    <Command>
-                      <CommandInput placeholder="Search country..." />
-                      <CommandEmpty>No country found.</CommandEmpty>
-                      <CommandGroup>
-                        {countries.map((country) => (
-                          <CommandItem
-                            key={country}
-                            value={country}
-                            onSelect={(value) => {
-                              setDestinationCountry(value);
-                              setOpenDestination(false);
-                            }}
-                          >
-                            {country}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                <Label className="text-lg font-medium font-sans">Destination Region</Label>
+                <select
+                  value={destinationCountry}
+                  onChange={(e) => setDestinationCountry(e.target.value)}
+                  className="w-full border rounded px-3 py-2"
+                >
+                  <option value="">Select a region</option>
+                  <option value="Asia">Asia</option>
+                  <option value="Europe">Europe</option>
+                  <option value="North America">North America</option>
+                  <option value="South America">South America</option>
+                  <option value="Africa">Africa</option>
+                  <option value="Oceania">Oceania</option>
+                  <option value="Middle East">Middle East</option>
+                </select>
               </div>
 
               {/* Travel Style */}
